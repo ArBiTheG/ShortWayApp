@@ -60,6 +60,14 @@
     <Compile Include="Scene2DControl.Designer.cs">
       <DependentUpon>Scene2DControl.cs</DependentUpon>
     </Compile>
+    <Compile Include="ShortWayControl\Relation.cs" />
+    <Compile Include="ShortWayControl\ShortWayControl.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="ShortWayControl\ShortWayControl.Designer.cs">
+      <DependentUpon>ShortWayControl.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ShortWayControl\Vector.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>

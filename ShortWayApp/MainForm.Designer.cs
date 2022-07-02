@@ -29,22 +29,23 @@ namespace ShortWayApp
         /// </summary>
         private void InitializeComponent()
         {
-            this.scene2DControl1 = new ShortWayApp.Scene2DControl();
+            this.shortWayControl1 = new ShortWayApp.ShortWayControl.ShortWayControl();
             this.SuspendLayout();
             // 
-            // scene2DControl1
+            // shortWayControl1
             // 
-            this.scene2DControl1.Location = new System.Drawing.Point(12, 12);
-            this.scene2DControl1.Name = "scene2DControl1";
-            this.scene2DControl1.Size = new System.Drawing.Size(349, 426);
-            this.scene2DControl1.TabIndex = 0;
+            this.shortWayControl1.Location = new System.Drawing.Point(12, 12);
+            this.shortWayControl1.Name = "shortWayControl1";
+            this.shortWayControl1.Size = new System.Drawing.Size(353, 426);
+            this.shortWayControl1.TabIndex = 0;
+            this.shortWayControl1.ZoomCam = 1F;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
-            this.Controls.Add(this.scene2DControl1);
+            this.Controls.Add(this.shortWayControl1);
             this.Name = "MainForm";
             this.Text = "MainForm";
             this.ResumeLayout(false);
@@ -53,7 +54,7 @@ namespace ShortWayApp
 
         #endregion
 
-        private Scene2DControl scene2DControl1;
+        private ShortWayControl.ShortWayControl shortWayControl1;
     }
 }
 
