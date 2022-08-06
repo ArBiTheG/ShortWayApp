@@ -83,6 +83,9 @@
     <EmbeddedResource Include="Scene2DControl.resx">
       <DependentUpon>Scene2DControl.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ShortWayControl\ShortWayControl.resx">
+      <DependentUpon>ShortWayControl.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>

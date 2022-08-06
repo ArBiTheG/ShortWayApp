@@ -16,17 +16,52 @@ namespace ShortWayApp
         /// <summary>
         /// Координаты нажатия по сцене
         /// </summary>
-        private PointF ClickScenePos;
+        private int old_mouse_x;
+        private int old_mouse_y;
+
 
         /// <summary>
         /// Координаты смещения от координат нажатия по сцене
         /// </summary>
-        private PointF OffsetCamPos;
-
+        private PointF camera_offset_position;
+        /// <summary>
+        /// Координаты смещения от координат нажатия по сцене
+        /// </summary>
+        public PointF CameraOffsetPosition
+        {
+            get
+            {
+                return camera_offset_position;
+            }
+        }
         /// <summary>
         /// Координаты камеры
         /// </summary>
-        private PointF CamPos;
+        private PointF camera_position;
+        /// <summary>
+        /// Координаты камеры
+        /// </summary>
+        public PointF CameraPosition
+        {
+            get
+            {
+                PointF position = camera_position;
+                position.X = position.X + camera_offset_position.X;
+                position.Y = position.Y + camera_offset_position.Y;
+                return position;
+            }
+        }
+
+        protected PointF RenderPosition
+        {
+            get
+            {
+                PointF position = camera_position;
+                position.X = (position.X + camera_offset_position.X) * zoom_cam + Width / 2;
+                position.Y = (position.Y + camera_offset_position.Y) * zoom_cam + Height / 2;
+                return position;
+            }
+        }
 
         /// <summary>
         /// Увеличение камеры
@@ -54,32 +89,6 @@ namespace ShortWayApp
         /// </summary>
         private int DotSize = 20;
 
-        /// <summary>
-        /// Координаты камеры со смещением, для получения плавности перемещения
-        /// </summary>
-        /// <returns>Возращает сумму координат камеры и координат смещения</returns>
-        protected PointF CameraPosition()
-        {
-            PointF position = CamPos;
-            position.X += OffsetCamPos.X;
-            position.Y += OffsetCamPos.Y;
-            return position;
-        }
-        /// <summary>
-        /// Координаты камеры для корректной обработки изображения на экране
-        /// </summary>
-        /// <returns></returns>
-        protected PointF RenderPosition()
-        {
-            PointF position = CamPos;
-            position.X += OffsetCamPos.X;
-            position.Y += OffsetCamPos.Y;
-            position.X *= zoom_cam;
-            position.Y *= zoom_cam;
-            position.X += Width / 2;
-            position.Y += Height / 2;
-            return position;
-        }
         public Scene2DControl()
         {
             InitializeComponent();
@@ -87,28 +96,34 @@ namespace ShortWayApp
         }
         protected override void OnMouseDown(MouseEventArgs e)
         {
-            ClickScenePos = MousePosition;
-            OffsetDrag = true;
-            Refresh();
+            if (e.Button == MouseButtons.Right)
+            {
+                old_mouse_x = e.X;
+                old_mouse_y = e.Y;
+                OffsetDrag = true;
+                Refresh();
+            }
             base.OnMouseDown(e);
         }
         protected override void OnMouseUp(MouseEventArgs e)
         {
-            CamPos.X += OffsetCamPos.X;
-            CamPos.Y += OffsetCamPos.Y;
-            OffsetCamPos.X = 0;
-            OffsetCamPos.Y = 0;
-            OffsetDrag = false;
-            Refresh();
-
+            if (e.Button == MouseButtons.Right)
+            {
+                camera_position.X += camera_offset_position.X;
+                camera_position.Y += camera_offset_position.Y;
+                camera_offset_position.X = 0;
+                camera_offset_position.Y = 0;
+                OffsetDrag = false;
+                Refresh();
+            }
             base.OnMouseUp(e);
         }
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            if (OffsetDrag)
+            if (OffsetDrag && e.Button == MouseButtons.Right)
             {
-                OffsetCamPos.X = (MousePosition.X - ClickScenePos.X) / zoom_cam;
-                OffsetCamPos.Y = (MousePosition.Y - ClickScenePos.Y) / zoom_cam;
+                camera_offset_position.X = (e.X - old_mouse_x) / zoom_cam;
+                camera_offset_position.Y = (e.Y - old_mouse_y) / zoom_cam;
                 Refresh();
             }
 
@@ -126,6 +141,27 @@ namespace ShortWayApp
             Refresh();
             base.OnMouseWheel(e);
         }
+        protected override void OnPreviewKeyDown(PreviewKeyDownEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Up:
+                    camera_position.Y += 2;
+                    break;
+                case Keys.Down:
+                    camera_position.Y -= 2;
+                    break;
+                case Keys.Left:
+                    camera_position.X += 2;
+                    break;
+                case Keys.Right:
+                    camera_position.X -= 2;
+                    break;
+            }
+            Refresh();
+            base.OnPreviewKeyDown(e);
+        }
+
         protected override void OnPaint(PaintEventArgs e)
         {
             Graphics g = e.Graphics;
@@ -145,13 +181,12 @@ namespace ShortWayApp
         /// </summary>
         private void DrawInfo(Graphics g)
         {
-            PointF camera = CameraPosition();
-            PointF area = RenderPosition();
+            PointF camera = CameraPosition;
             g.DrawString($"Camera Position: x:{camera.X} y:{camera.Y}", Font, Brushes.Black, 0, 0);
             g.DrawString($"Camera Zoom: {Math.Round(ZoomCam, 2)}", Font, Brushes.Black, 0, 30);
 
             if (OffsetDrag)
-                g.DrawString($"Offset: x:{OffsetCamPos.X} y:{OffsetCamPos.Y}", Font, Brushes.Black, 0, 45);
+                g.DrawString($"Offset: x:{camera_offset_position.X} y:{camera_offset_position.Y}", Font, Brushes.Black, 0, 45);
 
         }
         /// <summary>
@@ -159,7 +194,7 @@ namespace ShortWayApp
         /// </summary>
         private void DrawScene(Graphics g)
         {
-            PointF render = RenderPosition();
+            PointF render = RenderPosition;
             float step = 50 * zoom_cam;
             float x_start = render.X % step;
             float x = x_start;

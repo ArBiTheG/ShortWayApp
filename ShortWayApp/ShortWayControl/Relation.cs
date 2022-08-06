@@ -12,16 +12,21 @@ namespace ShortWayApp.ShortWayControl
         private Vector vectorB;
         public Vector VectorA => vectorA;
         public Vector VectorB => vectorB;
-        public Relation(Vector vectorA, Vector vectorB)
+        public bool Reverse = false;
+        public bool Duplex = false;
+        public bool Selected = false;
+        public Relation(Vector vectorA, Vector vectorB, bool reverse, bool duplex)
         {
             this.vectorA = vectorA;
             this.vectorB = vectorB;
+            this.Reverse = reverse;
+            this.Duplex = duplex;
         }
-        static public Relation Create(Vector a, Vector b)
+        static public Relation Create(Vector a, Vector b, bool reverse, bool duplex)
         {
             if (a != b)
                 if (a!=null && b!=null)
-                    return new Relation(a, b);
+                    return new Relation(a, b, reverse, duplex);
             return null;
         }
         public double GetAngle()
@@ -36,12 +41,16 @@ namespace ShortWayApp.ShortWayControl
             }
             return 0;
         }
-        public double Distance(int dec = 2)
+        public double Distance(int dec = 1)
         {
             double x = Math.Abs(VectorA.X - VectorB.X);
             double y = Math.Abs(VectorA.Y - VectorB.Y);
             double d = Math.Sqrt(x * x + y * y);
             return Math.Round(d, dec);
+        }
+        public void Select(bool value = true)
+        {
+            Selected = value;
         }
     }
 }
