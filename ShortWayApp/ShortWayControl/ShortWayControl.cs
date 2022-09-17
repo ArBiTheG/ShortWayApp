@@ -13,7 +13,7 @@ namespace ShortWayApp.ShortWayControl
 {
     public partial class ShortWayControl : Scene2DControl
     {
-        
+
         Dictionary<object, Vector> Vectors;
         List<Relation> Relations;
         AdjustableArrowCap adjustableArrowCap;
@@ -30,7 +30,7 @@ namespace ShortWayApp.ShortWayControl
         {
             Vectors = new Dictionary<object, Vector>();
             Relations = new List<Relation>();
-            adjustableArrowCap = new AdjustableArrowCap(4,4);
+            adjustableArrowCap = new AdjustableArrowCap(4, 4);
         }
         public void AddPoint(char point, int x, int y, string name = "")
         {
@@ -47,11 +47,11 @@ namespace ShortWayApp.ShortWayControl
         private List<Relation> GetRelations(Vector vector)
         {
             List<Relation> relations = new List<Relation>();
-            if (vector!= null)
+            if (vector != null)
             {
                 foreach (Relation relation in Relations)
                 {
-                    if (relation!=null)
+                    if (relation != null)
                         if (relation.VectorA == vector)
                             relations.Add(relation);
                 }
@@ -65,9 +65,22 @@ namespace ShortWayApp.ShortWayControl
                 foreach (Relation relation in Relations)
                 {
                     if (relation != null)
-                        if (relation.VectorA == vectorA && relation.VectorB == vectorB ||
-                            relation.VectorA == vectorB && relation.VectorB == vectorA)
-                            return relation;
+                        if (relation.Duplex)
+                        {
+                            if (relation.VectorA == vectorA && relation.VectorB == vectorB ||
+                                relation.VectorA == vectorB && relation.VectorB == vectorA)
+                                return relation;
+                        }
+                        else if (!relation.Reverse)
+                        {
+                            if (relation.VectorA == vectorA && relation.VectorB == vectorB)
+                                return relation;
+                        }
+                        else
+                        {
+                            if (relation.VectorA == vectorB && relation.VectorB == vectorA)
+                                return relation;
+                        }
                 }
             }
             return null;
@@ -104,6 +117,30 @@ namespace ShortWayApp.ShortWayControl
                 float xA = render.X - vectorA.X * ZoomCam;
                 float yA = render.Y - vectorA.Y * ZoomCam;
 
+                if (xA > 0 && xA < Width && yA > 0 && yA < Height)
+                {
+                    Brush brush;
+                    if (vectorA.Selected)
+                    {
+                        brush = Brushes.LightGreen;
+                    }
+                    else if (vectorA.Focused)
+                    {
+                        brush = Brushes.Aqua;
+                    }
+                    else if (HasRelation(vectorA))
+                    {
+                        brush = Brushes.Blue;
+                    }
+                    else
+                    {
+                        brush = Brushes.Black;
+                    }
+                    //Brush brush = vectorA.Selected ? Brushes.LightGreen : hasRelation ? Brushes.Blue : Brushes.Black;
+                    g.FillEllipse(brush, xA - vectorA.Size, yA - vectorA.Size, vectorA.Size * 2, vectorA.Size * 2);
+                    g.DrawString(symbol.ToString(), Font, brush, xA + vectorA.Size, yA + vectorA.Size);
+                }
+
                 List<Relation> relations = GetRelations(vectorA);
                 foreach (Relation relation in relations)
                 {
@@ -115,26 +152,25 @@ namespace ShortWayApp.ShortWayControl
                     float yB = render.Y - vectorB.Y * ZoomCam;
 
                     // Запрет отрисовки соединений за пределами видимой сцены
-                    if ((xA < 0 && xB < 0) || 
+                    if ((xA < 0 && xB < 0) ||
                         (yA < 0 && yB < 0) ||
-                        (xA > Width && xB > Width) || 
+                        (xA > Width && xB > Width) ||
                         (yA > Height && yB > Height)) continue;
 
                     // Выборка цветов
                     Brush brush;
-                    if (relation.Selected)
+                    if (!relation.Selected)
                     {
-                        brush = Brushes.LightGreen;
+                        if (relation.Duplex)
+                            brush = vectorA.Focused || vectorB.Focused ? Brushes.Aqua : Brushes.Blue;
+                        else if (!relation.Reverse)
+                            brush = vectorA.Focused ? Brushes.Aqua : Brushes.Blue;
+                        else
+                            brush = vectorB.Focused ? Brushes.Aqua : Brushes.Blue;
                     }
                     else
                     {
-                        if (relation.Duplex)
-                            brush = vectorA.Selected || vectorB.Selected ? Brushes.Red : Brushes.Blue;
-                        else
-                            if (relation.Reverse)
-                            brush = vectorB.Selected ? Brushes.Red : Brushes.Blue;
-                        else
-                            brush = vectorA.Selected ? Brushes.Red : Brushes.Blue;
+                        brush = Brushes.LightGreen;
                     }
 
                     // Отрисовка линий и текста
@@ -146,25 +182,16 @@ namespace ShortWayApp.ShortWayControl
                             pen.CustomStartCap = adjustableArrowCap;
                             pen.CustomEndCap = adjustableArrowCap;
                         }
+                        else if (!relation.Reverse)
+                            pen.CustomEndCap = adjustableArrowCap;
                         else
-                        {
-                            if (relation.Reverse)
-                                pen.CustomStartCap = adjustableArrowCap;
-                            else
-                                pen.CustomEndCap = adjustableArrowCap;
-                        }
+                            pen.CustomStartCap = adjustableArrowCap;
                         g.DrawLine(pen, xA, yA, xB, yB);
                         g.DrawString(relation.Distance().ToString(), Font, brush, (xA + xB) / 2, (yA + yB) / 2);
                     }
                 }
 
-                if (xA > 0 && xA < Width && yA > 0 && yA < Height)
-                {
-                    bool hasRelation = HasRelation(vectorA);
-                    Brush brush = vectorA.Selected ? Brushes.Red : hasRelation ? Brushes.Blue : Brushes.Black;
-                    g.FillEllipse(brush, xA - vectorA.Size, yA - vectorA.Size, vectorA.Size * 2, vectorA.Size * 2);
-                    g.DrawString(symbol.ToString(), Font, brush, xA + vectorA.Size, yA + vectorA.Size);
-                }
+                
             }
         }
         protected override void OnMouseClick(MouseEventArgs e)
@@ -177,10 +204,10 @@ namespace ShortWayApp.ShortWayControl
                 foreach (var item in Vectors)
                 {
                     Vector vector = (item.Value);
-                    if (vector.GetDistance(x,y) < vector.Size / ZoomCam)
-                        vector.Selected = true;
+                    if (vector.GetDistance(x, y) < vector.Size / ZoomCam)
+                        vector.Focused = true;
                     else
-                        vector.Selected = false;
+                        vector.Focused = false;
                 }
             }
             Refresh();
@@ -233,7 +260,7 @@ namespace ShortWayApp.ShortWayControl
                 for (int j = 0; j < count; j++)
                 {
                     int index = WaysWay[i, j];
-                    Console.Write($"{ Vectors.ElementAt(index).Key ,10} | ");
+                    Console.Write($"{ Vectors.ElementAt(index).Key,10} | ");
                 }
                 Console.WriteLine();
             }
@@ -244,36 +271,32 @@ namespace ShortWayApp.ShortWayControl
             foreach (Vector vector in Vectors.Values)
             {
                 vector.Selected = false;
+                vector.Focused = false;
             }
             foreach (Relation relation in Relations)
             {
                 relation.Selected = false;
             }
         }
-        public string WayTracing(int startPoint, int endPoint)
+        public void ResetWayMatrix(int count)
         {
-            ClearSelections();
-            int count = Vectors.Count;
-            Vector[] vectors = Vectors.Values.ToArray();
-            WaysDistance = new double[count,count];
+            WaysDistance = new double[count, count];
             WaysWay = new int[count, count];
-
-            #region Заполнение всех путей до предела
-            Console.WriteLine("Этап 1: Заполнение всех путей до предела");
             for (int i = 0; i < count; i++)
             {
                 for (int j = 0; j < count; j++)
                 {
+                    WaysWay[i, j] = j;
                     if (i != j)
                         WaysDistance[i, j] = INF;
                     else
                         WaysDistance[i, i] = 0;
                 }
             }
-            #endregion
-
-            #region Внесение в матрицу начальных значений
-            Console.WriteLine("Этап 2: Внесение в матрицу начальных значений");
+        }
+        public void LoadWayMatrix(int count)
+        {
+            ResetWayMatrix(count);
             for (int i = 0; i < count; i++)
             {
                 var itemA = Vectors.ElementAt(i);
@@ -284,52 +307,44 @@ namespace ShortWayApp.ShortWayControl
                     var itemB = Vectors.ElementAt(j);
                     var valueB = itemB.Value;
 
-                    WaysWay[i, j] = j;
                     if (i != j)
                     {
                         foreach (Relation relation in Relations)
                         {
                             if (relation.Duplex)
                             {
-                                if (valueB == relation.VectorB && valueA == relation.VectorA)
+                                if (valueB == relation.VectorB && valueA == relation.VectorA ||
+                                valueB == relation.VectorA && valueA == relation.VectorB)
                                 {
                                     WaysDistance[i, j] = relation.Distance(1);
                                     WaysDistance[j, i] = relation.Distance(1);
                                 }
                             }
+                            else if (!relation.Reverse)
+                            {
+                                if (valueB == relation.VectorB && valueA == relation.VectorA)
+                                {
+                                    WaysDistance[i, j] = relation.Distance(1);
+                                }
+                            }
                             else
                             {
-                                if (relation.Reverse)
+                                if (valueB == relation.VectorA && valueA == relation.VectorB)
                                 {
-                                    if (valueB == relation.VectorB)
-                                    {
-                                        if (valueA == relation.VectorA)
-                                        {
-                                            WaysDistance[i, j] = relation.Distance(1);
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    if (valueA == relation.VectorA)
-                                    {
-                                        if (valueB == relation.VectorB)
-                                        {
-                                            WaysDistance[i, j] = relation.Distance(1);
-                                        }
-                                    }
+                                    WaysDistance[j, i] = relation.Distance(1);
                                 }
                             }
                         }
                     }
-                    else
-                    {
-                        WaysDistance[i, i] = 0;
-                    }
                 }
             }
-            #endregion
+
+        }
+        public void CalculateWayMatrix(int count)
+        {
 #if DEBUG
+            Console.WriteLine("------------------------------");
+            Console.WriteLine("Шаг: 0");
             WriteMatrix();
 #endif
             for (int i = 0; i < count; i++)
@@ -341,7 +356,7 @@ namespace ShortWayApp.ShortWayControl
                     for (int c = 0; c < count; c++)
                     {
                         if (c == i) continue;
-                        double column = WaysDistance[i,c];
+                        double column = WaysDistance[i, c];
                         double row = WaysDistance[r, i];
                         double cell = WaysDistance[r, c];
                         if (cell > column + row)
@@ -352,45 +367,72 @@ namespace ShortWayApp.ShortWayControl
                     }
                 }
 #if DEBUG
-                Console.WriteLine("Шаг: " + i + 1);
+                Console.WriteLine("------------------------------");
+                Console.WriteLine("Шаг: " + (i + 1));
                 WriteMatrix();
 #endif
             }
-            int middlePoint = WaysWay[startPoint, endPoint];
-            Relation relatio = GetRelation(Vectors.ElementAt(startPoint).Value, Vectors.ElementAt(middlePoint).Value);
+        }
+        public void FillWayMatrix()
+        {
+            ClearSelections();
+            int count = Vectors.Count;
+            LoadWayMatrix(count);
+            CalculateWayMatrix(count);
 
-            if (middlePoint == startPoint)
-                return "Указанного пути не существует";
+        }
+        public string WayTracing(int startPoint, int endPoint)
+        {
+            double distance = 0;
+            string textOutput = "";
 
-            double generalM = relatio.Distance();
-            string output_text = "Из пункта '" + Vectors.ElementAt(startPoint).Key +
-                "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "' ( " + relatio.Distance() + "м )\n";
-
-            if (relatio != null)
-            {
-                relatio.Select();
-            }
+            int middlePoint = startPoint;
+            int oldPoint = middlePoint;
+            Relation relatio = null;
             while (middlePoint != endPoint)
             {
-                int old = middlePoint;
-                middlePoint = WaysWay[old, endPoint];
-                relatio = GetRelation(Vectors.ElementAt(old).Value, Vectors.ElementAt(middlePoint).Value);
+                oldPoint = middlePoint;
+                middlePoint = WaysWay[oldPoint, endPoint];
+                relatio = GetRelation(Vectors.ElementAt(oldPoint).Value, Vectors.ElementAt(middlePoint).Value);
+                if (relatio == null)
+                {
+                    for (int t = 0; t < Vectors.Count; t++)
+                    {
+                        middlePoint = WaysWay[oldPoint, middlePoint];
+                        relatio = GetRelation(Vectors.ElementAt(oldPoint).Value, Vectors.ElementAt(middlePoint).Value);
+                        if (relatio != null) break;
+                    }
+                }
                 if (relatio != null)
                 {
                     relatio.Select();
+
+                    double d = relatio.Distance();
+                    distance += d;
+                    textOutput += "из пункта '" + Vectors.ElementAt(oldPoint).Key +
+                        "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "' ( " + d + "м )\n";
                 }
-                generalM += relatio.Distance();
-                output_text += "из пункта '" + Vectors.ElementAt(old).Key +
-                    "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "' ( " + relatio.Distance() + "м )\n";
+                else
+                {
+                    textOutput = "Невозможно переместиться из пункта '" + 
+                        Vectors.ElementAt(oldPoint).Key +
+                        "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "'!\n";
+                    Console.WriteLine("Во время расчёта пути, была допущена ошибка!");
+                    Console.WriteLine(String.Format(
+                        "На координатах матрицы ('{0}','{1}') лежит следующая точка '{2}', но отношение между '{0}' и '{2}' отсутствует",
+                        Vectors.ElementAt(oldPoint).Key,
+                        Vectors.ElementAt(endPoint).Key,
+                        Vectors.ElementAt(middlePoint).Key));
+                    break;
+                }
 
             }
-            output_text += "Общее расстояние: " + generalM + "м";
+            textOutput += "Общее расстояние: " + distance + "м";
 #if DEBUG
-            Console.WriteLine(output_text);
+            Console.WriteLine(textOutput);
 #endif
-
             Refresh();
-            return output_text;
+            return textOutput;
         }
     }
 }

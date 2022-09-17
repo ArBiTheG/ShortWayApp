@@ -13,6 +13,7 @@ namespace ShortWayApp.ShortWayControl
         public float Size;
         public string Name;
         public bool Selected;
+        public bool Focused;
         public Vector(float x, float y, string name)
         {
             X = x;

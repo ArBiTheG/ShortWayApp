@@ -51,6 +51,8 @@ namespace ShortWayApp.ShortWayControl
         public void Select(bool value = true)
         {
             Selected = value;
+            vectorA.Selected = value;
+            vectorB.Selected = value;
         }
     }
 }

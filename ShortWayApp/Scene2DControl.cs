@@ -166,7 +166,7 @@ namespace ShortWayApp
         {
             Graphics g = e.Graphics;
 
-            DrawScene(g);
+            //DrawScene(g);
             DrawInfo(g);
 
             g.DrawLine(Pens.Black, Width / 2 - DotSize / 2, Height / 2, Width / 2 + DotSize / 2, Height / 2);
@@ -174,6 +174,11 @@ namespace ShortWayApp
             g.DrawRectangle(Pens.Black ,0,0,Width-1, Height -1);
             
             base.OnPaint(e);
+        }
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            Refresh();
         }
 
         /// <summary>

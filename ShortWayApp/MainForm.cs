@@ -28,8 +28,8 @@ namespace ShortWayApp
             shortWayControl1.AddRelation('A', 'C');
             shortWayControl1.AddRelation('D', 'C', false, true);
             shortWayControl1.AddRelation('C', 'G');
-            shortWayControl1.AddRelation('G', 'F');
-            shortWayControl1.AddRelation('V', 'F', false, true);
+            shortWayControl1.AddRelation('G', 'F', false, true);
+            //shortWayControl1.AddRelation('V', 'F', false, true);
 
             starterComboBox.Items.AddRange(shortWayControl1.GetPoints());
             endingComboBox.Items.AddRange(shortWayControl1.GetPoints());
@@ -52,6 +52,7 @@ namespace ShortWayApp
 
         private void button2_Click(object sender, EventArgs e)
         {
+            shortWayControl1.FillWayMatrix();
             richTextBox1.Text = shortWayControl1.WayTracing(starterComboBox.SelectedIndex, endingComboBox.SelectedIndex);
         }
     }

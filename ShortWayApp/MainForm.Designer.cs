@@ -29,7 +29,6 @@ namespace ShortWayApp
         /// </summary>
         private void InitializeComponent()
         {
-            this.button1 = new System.Windows.Forms.Button();
             this.starterLabel = new System.Windows.Forms.Label();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.endingLabel = new System.Windows.Forms.Label();
@@ -40,16 +39,6 @@ namespace ShortWayApp
             this.shortWayControl1 = new ShortWayApp.ShortWayControl.ShortWayControl();
             this.tableLayoutPanel1.SuspendLayout();
             this.SuspendLayout();
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(371, 415);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 1;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // starterLabel
             // 
@@ -65,6 +54,7 @@ namespace ShortWayApp
             // 
             // tableLayoutPanel1
             // 
+            this.tableLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.tableLayoutPanel1.ColumnCount = 2;
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
             this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 50F));
@@ -128,15 +118,18 @@ namespace ShortWayApp
             // 
             this.tableLayoutPanel1.SetColumnSpan(this.richTextBox1, 2);
             this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Enabled = false;
             this.richTextBox1.Location = new System.Drawing.Point(3, 96);
             this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.ReadOnly = true;
             this.richTextBox1.Size = new System.Drawing.Size(408, 195);
             this.richTextBox1.TabIndex = 6;
             this.richTextBox1.Text = "";
             // 
             // shortWayControl1
             // 
+            this.shortWayControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.shortWayControl1.Location = new System.Drawing.Point(12, 12);
             this.shortWayControl1.Name = "shortWayControl1";
             this.shortWayControl1.Size = new System.Drawing.Size(353, 426);
@@ -150,7 +143,6 @@ namespace ShortWayApp
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.tableLayoutPanel1);
-            this.Controls.Add(this.button1);
             this.Controls.Add(this.shortWayControl1);
             this.Name = "MainForm";
             this.Text = "MainForm";
@@ -163,7 +155,6 @@ namespace ShortWayApp
         #endregion
 
         private ShortWayControl.ShortWayControl shortWayControl1;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.Label starterLabel;
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ComboBox starterComboBox;
