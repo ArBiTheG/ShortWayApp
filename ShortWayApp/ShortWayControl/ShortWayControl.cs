@@ -14,7 +14,7 @@ namespace ShortWayApp.ShortWayControl
     public partial class ShortWayControl : Scene2DControl
     {
         
-        Dictionary<char, Vector> Vectors;
+        Dictionary<object, Vector> Vectors;
         List<Relation> Relations;
         AdjustableArrowCap adjustableArrowCap;
         public ShortWayControl()
@@ -22,9 +22,13 @@ namespace ShortWayApp.ShortWayControl
             InitializeComponent();
             InitializeVariables();
         }
+        public object[] GetPoints()
+        {
+            return Vectors.Keys.ToArray();
+        }
         private void InitializeVariables()
         {
-            Vectors = new Dictionary<char, Vector>();
+            Vectors = new Dictionary<object, Vector>();
             Relations = new List<Relation>();
             adjustableArrowCap = new AdjustableArrowCap(4,4);
         }
@@ -91,7 +95,7 @@ namespace ShortWayApp.ShortWayControl
             foreach (var item in Vectors)
             {
                 // Получить букву вектора
-                char symbol = item.Key;
+                char symbol = (char)item.Key;
 
                 // Получить вектор
                 Vector vectorA = item.Value;
@@ -234,10 +238,22 @@ namespace ShortWayApp.ShortWayControl
                 Console.WriteLine();
             }
         }
-        public void WayTracing()
+        public void ClearSelections()
         {
+
+            foreach (Vector vector in Vectors.Values)
+            {
+                vector.Selected = false;
+            }
+            foreach (Relation relation in Relations)
+            {
+                relation.Selected = false;
+            }
+        }
+        public string WayTracing(int startPoint, int endPoint)
+        {
+            ClearSelections();
             int count = Vectors.Count;
-            char[] symbols = Vectors.Keys.ToArray();
             Vector[] vectors = Vectors.Values.ToArray();
             WaysDistance = new double[count,count];
             WaysWay = new int[count, count];
@@ -335,14 +351,21 @@ namespace ShortWayApp.ShortWayControl
                         }
                     }
                 }
+#if DEBUG
                 Console.WriteLine("Шаг: " + i + 1);
                 WriteMatrix();
+#endif
             }
-            int startPoint = 4;
-            int endPoint = 2;
             int middlePoint = WaysWay[startPoint, endPoint];
-            Console.WriteLine(Vectors.ElementAt(startPoint).Key + " -> " + Vectors.ElementAt(middlePoint).Key);
             Relation relatio = GetRelation(Vectors.ElementAt(startPoint).Value, Vectors.ElementAt(middlePoint).Value);
+
+            if (middlePoint == startPoint)
+                return "Указанного пути не существует";
+
+            double generalM = relatio.Distance();
+            string output_text = "Из пункта '" + Vectors.ElementAt(startPoint).Key +
+                "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "' ( " + relatio.Distance() + "м )\n";
+
             if (relatio != null)
             {
                 relatio.Select();
@@ -356,8 +379,18 @@ namespace ShortWayApp.ShortWayControl
                 {
                     relatio.Select();
                 }
-                Console.WriteLine(Vectors.ElementAt(old).Key + " -> " + Vectors.ElementAt(middlePoint).Key);
+                generalM += relatio.Distance();
+                output_text += "из пункта '" + Vectors.ElementAt(old).Key +
+                    "' в пункт '" + Vectors.ElementAt(middlePoint).Key + "' ( " + relatio.Distance() + "м )\n";
+
             }
+            output_text += "Общее расстояние: " + generalM + "м";
+#if DEBUG
+            Console.WriteLine(output_text);
+#endif
+
+            Refresh();
+            return output_text;
         }
     }
 }
